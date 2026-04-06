@@ -24,7 +24,7 @@ git init
 git add .
 
 # 提交
-git commit -m "feat: initial release - Smart Article PDF Generator"
+git commit -m "feat: initial release - AI Book Compiler"
 
 # 添加远程仓库（替换 YOUR_USERNAME 为你的 GitHub 用户名）
 git remote add origin https://github.com/YOUR_USERNAME/ai-book-compiler.git
