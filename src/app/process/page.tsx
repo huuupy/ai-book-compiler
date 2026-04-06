@@ -12,7 +12,8 @@ import { exportToPDF, printPreview } from '@/lib/pdfExport';
 import {
   FileText, Settings2, Loader2,
   Eye, Download, RotateCcw, Plus, Trash2, ChevronDown, ChevronUp,
-  BookOpen, Sparkles, ArrowUp, ArrowDown,
+  BookOpen, Sparkles, ArrowUp, ArrowDown, Wand2, ClipboardPaste, Image,
+  Upload,
 } from 'lucide-react';
 
 interface ReplyItem {
@@ -74,6 +75,8 @@ export default function ProcessPage() {
   // UI 状态
   const [isProcessing, setIsProcessing] = useState(false);
   const [expandedReply, setExpandedReply] = useState<string | null>('1');
+  const [ocrStatus, setOcrStatus] = useState<string>('');
+  const [fileInputRef, setFileInputRef] = useState<HTMLInputElement | null>(null);
 
   // 添加新回复
   const addReply = useCallback(() => {
@@ -128,6 +131,252 @@ export default function ProcessPage() {
       return newReplies.map((r, i) => ({ ...r, order: i + 1 }));
     });
   }, []);
+
+  // 由浅入深排序（根据内容复杂度：长度、标题中的问号数量等）
+  const sortByDepth = useCallback(() => {
+    setReplies(prev => {
+      const sorted = [...prev].sort((a, b) => {
+        // 计算复杂度分数
+        const calcScore = (item: ReplyItem) => {
+          let score = 0;
+          const title = item.title.toLowerCase();
+          const content = item.content;
+          
+          // 标题中包含疑问词/问号的优先靠后（更深）
+          if (title.includes('为什么') || title.includes('如何') || 
+              title.includes('怎么') || title.includes('?') || title.includes('？')) {
+            score += 3;
+          }
+          if (title.includes('分析') || title.includes('解释') || title.includes('原理')) {
+            score += 2;
+          }
+          if (title.includes('概念') || title.includes('定义') || title.includes('是什么')) {
+            score -= 2;
+          }
+          
+          // 内容长度越长越靠后
+          score += Math.min(content.length / 1000, 5);
+          
+          // 代码块多说明更深入
+          const codeBlocks = (content.match(/```/g) || []).length;
+          score += codeBlocks * 0.5;
+          
+          return score;
+        };
+        
+        return calcScore(a) - calcScore(b);
+      });
+      
+      return sorted.map((r, i) => ({ ...r, order: i + 1 }));
+    });
+  }, []);
+
+  // 从剪贴板粘贴并智能识别 Q&A
+  const pasteAndDetectQA = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) return;
+      
+      // 智能识别 Q&A 模式
+      // 模式1: Q: ... A: ... 或 问题: ... 回答: ...
+      // 模式2: 问：... 答：...
+      // 模式3: 数字编号的问题（1. xxx 2. xxx）
+      
+      const qaPairs: { title: string; content: string }[] = [];
+      
+      // 尝试模式1: Q: / 问题: / 问：
+      const qaPattern1 = /(?:Q:|问题:|问：)\s*([^\n]+)\n(?:A:|回答:|答：)?\s*([\s\S]*?)(?=(?:Q:|问题:|问：)\s*[^\n]+|$)/gi;
+      let match;
+      while ((match = qaPattern1.exec(text)) !== null) {
+        qaPairs.push({
+          title: match[1].trim(),
+          content: match[2].trim()
+        });
+      }
+      
+      // 尝试模式2: 数字编号的问题
+      if (qaPairs.length === 0) {
+        const numPattern = /(?:\d+[.、])\s*([^\n?]+[？?])?\n*([\s\S]*?)(?=(?:\d+[.、])|$)/gi;
+        while ((match = numPattern.exec(text)) !== null) {
+          const title = match[1]?.trim() || `问题 ${qaPairs.length + 1}`;
+          const content = match[2]?.trim() || '';
+          if (content && content.length > 10) {
+            qaPairs.push({ title, content });
+          }
+        }
+      }
+      
+      // 如果识别到 Q&A
+      if (qaPairs.length > 0) {
+        const newReplies = qaPairs.map((qa, i) => ({
+          id: `qa-${Date.now()}-${i}`,
+          title: qa.title,
+          content: qa.content,
+          order: replies.length + i + 1,
+          selected: true,
+        }));
+        setReplies(prev => [...prev, ...newReplies]);
+        alert(`识别到 ${qaPairs.length} 个问题-答案对，已自动添加`);
+      } else {
+        // 没有识别到 Q&A，把整个内容作为一个回复添加
+        const newId = Date.now().toString();
+        setReplies(prev => [...prev, {
+          id: newId,
+          title: '粘贴内容',
+          content: text,
+          order: prev.length + 1,
+          selected: true,
+        }]);
+        alert('未识别到明确的问题-答案格式，已作为单条内容添加');
+      }
+    } catch (error) {
+      alert('无法访问剪贴板，请手动粘贴内容');
+    }
+  }, [replies.length]);
+
+  // 截图 OCR 识别
+  const handleScreenCaptureOCR = useCallback(async () => {
+    setIsProcessing(true);
+    setOcrStatus('正在初始化 OCR...');
+    
+    try {
+      // 尝试读取剪贴板中的图片
+      const items = await navigator.clipboard.read();
+      let imageBlob: Blob | null = null;
+      
+      for (const item of items) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            imageBlob = await item.getType(type);
+            break;
+          }
+        }
+        if (imageBlob) break;
+      }
+      
+      if (!imageBlob) {
+        alert('剪贴板中没有图片，请先截图（Win+Shift+S）然后粘贴');
+        setIsProcessing(false);
+        setOcrStatus('');
+        return;
+      }
+      
+      setOcrStatus('正在识别文字，请稍候...');
+      
+      // 动态导入 Tesseract
+      const Tesseract = await import('tesseract.js');
+      
+      const result = await Tesseract.recognize(imageBlob, 'chi_sim+eng', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrStatus(`识别中... ${Math.round(m.progress * 100)}%`);
+          }
+        }
+      });
+      
+      const recognizedText = result.data.text.trim();
+      
+      if (!recognizedText) {
+        alert('未能从图片中识别到文字');
+        setIsProcessing(false);
+        setOcrStatus('');
+        return;
+      }
+      
+      // 添加识别结果
+      const newId = Date.now().toString();
+      setReplies(prev => [...prev, {
+        id: newId,
+        title: '截图识别',
+        content: recognizedText,
+        order: prev.length + 1,
+        selected: true,
+      }]);
+      
+      alert(`识别成功！识别到 ${recognizedText.length} 个字符`);
+      setExpandedReply(newId);
+      
+    } catch (error: any) {
+      console.error('OCR Error:', error);
+      if (error.name === 'NotAllowedError') {
+        alert('需要授权访问剪贴板，请在浏览器设置中允许此网站的剪贴板访问');
+      } else {
+        alert('OCR 识别失败，请确保已安装 tesseract.js 依赖');
+      }
+    }
+    
+    setIsProcessing(false);
+    setOcrStatus('');
+  }, []);
+
+  // 触发文件选择
+  const triggerFileUpload = useCallback(() => {
+    if (fileInputRef) {
+      fileInputRef.click();
+    }
+  }, [fileInputRef]);
+
+  // 文件上传 OCR 识别
+  const handleFileUploadOCR = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 检查是否是图片文件
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件');
+      return;
+    }
+
+    setIsProcessing(true);
+    setOcrStatus('正在识别文字，请稍候...');
+
+    try {
+      // 动态导入 Tesseract
+      const Tesseract = await import('tesseract.js');
+
+      const result = await Tesseract.recognize(file, 'chi_sim+eng', {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrStatus(`识别中... ${Math.round(m.progress * 100)}%`);
+          }
+        }
+      });
+
+      const recognizedText = result.data.text.trim();
+
+      if (!recognizedText) {
+        alert('未能从图片中识别到文字');
+        setIsProcessing(false);
+        setOcrStatus('');
+        return;
+      }
+
+      // 添加识别结果
+      const newId = Date.now().toString();
+      setReplies(prev => [...prev, {
+        id: newId,
+        title: `图片识别 - ${file.name}`,
+        content: recognizedText,
+        order: prev.length + 1,
+        selected: true,
+      }]);
+
+      alert(`识别成功！识别到 ${recognizedText.length} 个字符`);
+      setExpandedReply(newId);
+
+    } catch (error: any) {
+      console.error('OCR Error:', error);
+      alert('OCR 识别失败，请确保已安装 tesseract.js 依赖');
+    }
+
+    setIsProcessing(false);
+    setOcrStatus('');
+    
+    // 清空 input 以便重复选择同一文件
+    if (fileInputRef) {
+      fileInputRef.value = '';
+    }
+  }, [fileInputRef]);
 
   // 导出 PDF
   const handleExportPDF = useCallback(async () => {
@@ -248,7 +497,7 @@ export default function ProcessPage() {
             {/* 回复列表 */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-blue-600" />
                     AI 回复内容
@@ -256,13 +505,40 @@ export default function ProcessPage() {
                       ({validRepliesCount} 条有效内容)
                     </span>
                   </h2>
-                  <Button variant="outline" size="sm" onClick={addReply}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    添加回复
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={pasteAndDetectQA} disabled={isProcessing}>
+                      <ClipboardPaste className="w-4 h-4 mr-1" />
+                      粘贴识别
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleScreenCaptureOCR} disabled={isProcessing}>
+                      <Image className="w-4 h-4 mr-1" />
+                      截图识别
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={triggerFileUpload} disabled={isProcessing}>
+                      <Upload className="w-4 h-4 mr-1" />
+                      图片上传
+                    </Button>
+                    <input
+                      type="file"
+                      ref={setFileInputRef}
+                      accept="image/*"
+                      onChange={handleFileUploadOCR}
+                      className="hidden"
+                    />
+                    <Button variant="outline" size="sm" onClick={addReply}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      添加回复
+                    </Button>
+                  </div>
                 </div>
+                {ocrStatus && (
+                  <div className="mt-2 flex items-center gap-2 text-blue-600 text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {ocrStatus}
+                  </div>
+                )}
                 <CardDescription>
-                  粘贴 AI 回复内容，为每条设置标题以便整理
+                  粘贴 AI 回复内容，或使用「粘贴识别」自动拆分，「截图识别」从剪贴板图片提取文字，「图片上传」选择本地文件识别
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -379,7 +655,7 @@ export default function ProcessPage() {
             {/* 内容排序 */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-blue-600" />
                     内容排序
@@ -387,9 +663,13 @@ export default function ProcessPage() {
                       ({selectedCount} / {replies.length} 条已选中)
                     </span>
                   </h2>
+                  <Button variant="outline" size="sm" onClick={sortByDepth}>
+                    <Wand2 className="w-4 h-4 mr-1" />
+                    由浅入深
+                  </Button>
                 </div>
                 <CardDescription>
-                  拖动调整顺序，选中要包含的内容
+                  拖动调整顺序，或点击「由浅入深」自动排序，选中要包含的内容
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">

@@ -127,7 +127,7 @@ export function generateReportHTML(
   <style>
     @page {
       size: ${isLandscape ? `${paper.height} ${paper.width}` : `${paper.width} ${paper.height}`};
-      margin: ${margin.top} ${margin.right} ${margin.bottom} ${margin.left};
+      margin: ${settings.showHeader ? `30mm ${margin.right} ${margin.bottom} ${margin.left}` : `${margin.top} ${margin.right} ${margin.bottom} ${margin.left}`};
     }
     
     * { box-sizing: border-box; }
@@ -530,11 +530,80 @@ ${contentHtml}
   
   html += `</div>\n`;
 
+  // 页码和页眉页脚
+  const pageNumberHtml = `
+  <script>
+    // 页码和页眉页脚处理
+    document.addEventListener('DOMContentLoaded', function() {
+      const pageNumber = document.querySelector('.page-number');
+      const footerText = document.querySelector('.footer-text');
+      
+      // 监听打印事件设置页码
+      window.onbeforeprint = function() {
+        updatePageNumbers();
+      };
+      
+      function updatePageNumbers() {
+        // 页码更新逻辑由浏览器自动处理
+      }
+    });
+  </script>`;
+
   // 页码
   if (settings.showPageNumber) {
     html += `
   <div class="page-number bottom-center"></div>
 `;
+  }
+
+  // 页眉
+  if (settings.showHeader && settings.headerText) {
+    const headerContent = settings.headerText
+      .replace('{title}', bookTitle)
+      .replace('{date}', new Date().toLocaleDateString('zh-CN'));
+    html = html.replace('</style>', `
+    
+    /* 页眉 */
+    .header {
+      position: fixed;
+      top: ${margin.top};
+      left: ${margin.left};
+      right: ${margin.right};
+      font-size: 10pt;
+      color: #999;
+      text-align: right;
+      padding-bottom: 5mm;
+      border-bottom: 1px solid #eee;
+    }
+  </style>`);
+    html = html.replace('<body>', `
+  <div class="header">${headerContent}</div>
+<body>`);
+  }
+
+  // 页脚
+  if (settings.showFooter && settings.footerText) {
+    const footerContent = settings.footerText
+      .replace('{page}', '<!--page-->')
+      .replace('{total}', validArticles.length.toString());
+    html = html.replace('</style>', `
+    
+    /* 页脚 */
+    .footer {
+      position: fixed;
+      bottom: ${margin.bottom};
+      left: ${margin.left};
+      right: ${margin.right};
+      font-size: 10pt;
+      color: #999;
+      text-align: center;
+      padding-top: 5mm;
+      border-top: 1px solid #eee;
+    }
+  </style>`);
+    html = html.replace('<body>', `
+  <div class="footer">${footerContent}</div>
+<body>`);
   }
 
   html += `
