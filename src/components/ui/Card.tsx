@@ -58,4 +58,16 @@ const CardFooter = forwardRef<HTMLDivElement, CardHTMLAttributes<HTMLDivElement>
 
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader, CardContent, CardFooter };
+const CardDescription = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn('text-sm text-slate-500 mt-1', className)}
+      {...props}
+    />
+  )
+);
+
+CardDescription.displayName = 'CardDescription';
+
+export { Card, CardHeader, CardContent, CardFooter, CardDescription };

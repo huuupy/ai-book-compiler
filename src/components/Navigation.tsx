@@ -3,14 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Download, Settings, Menu, X } from 'lucide-react';
+import { BookOpen, Settings, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
-  { href: '/', label: '仪表盘', icon: LayoutDashboard },
-  { href: '/articles', label: '文章库', icon: FileText },
-  { href: '/crawl', label: '采集任务', icon: Download },
-  { href: '/export', label: '导出中心', icon: Download },
+  { href: '/', label: '首页', icon: BookOpen },
+  { href: '/process', label: '整理内容', icon: BookOpen },
   { href: '/settings', label: '设置', icon: Settings },
 ];
 
@@ -25,10 +23,10 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">PDF</span>
             </div>
             <span className="hidden sm:block font-semibold text-slate-900">
-              智能采集系统
+              AI Book Compiler
             </span>
           </Link>
 

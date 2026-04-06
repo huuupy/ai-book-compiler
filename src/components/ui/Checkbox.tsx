@@ -11,31 +11,30 @@ interface CheckboxProps extends CheckboxHTMLAttributes<HTMLInputElement> {
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, label, checked, onChange, ...props }, ref) => {
     return (
-      <label className="inline-flex items-center gap-2 cursor-pointer">
-        <div className="relative">
-          <input
-            ref={ref}
-            type="checkbox"
-            checked={checked}
-            onChange={onChange}
-            className="sr-only peer"
-            {...props}
-          />
-          <div
-            className={cn(
-              'w-5 h-5 rounded-md border-2 transition-all duration-200',
-              'flex items-center justify-center',
-              checked
-                ? 'bg-primary border-primary'
-                : 'border-slate-300 peer-hover:border-slate-400',
-              className
-            )}
-          >
-            {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-          </div>
+      <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+        <div
+          className={cn(
+            'w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center',
+            checked
+              ? 'bg-blue-500 border-blue-500 shadow-sm'
+              : 'border-slate-400 bg-white hover:border-blue-400 hover:shadow-sm',
+            className
+          )}
+        >
+          {checked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
         </div>
+        <input
+          ref={ref}
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="sr-only"
+          {...props}
+        />
         {label && (
-          <span className="text-sm text-slate-700 select-none">{label}</span>
+          <span className="text-sm font-medium text-slate-700 select-none cursor-pointer">
+            {label}
+          </span>
         )}
       </label>
     );

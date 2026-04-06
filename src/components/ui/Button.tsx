@@ -12,28 +12,28 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: 'bg-primary text-white hover:bg-primary-600 shadow-sm',
-      secondary: 'bg-secondary text-secondary-foreground hover:bg-slate-200',
-      outline: 'border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400',
-      ghost: 'hover:bg-slate-100 text-slate-700',
-      destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
+      primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md font-semibold',
+      secondary: 'bg-slate-600 text-white hover:bg-slate-700 shadow-sm font-medium',
+      outline: 'border-2 border-slate-400 bg-white hover:bg-slate-100 hover:border-slate-500 font-medium text-slate-700',
+      ghost: 'bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium',
+      destructive: 'bg-red-600 text-white hover:bg-red-700 shadow-md font-semibold',
     };
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm rounded-md',
-      md: 'px-4 py-2 text-sm rounded-lg',
+      sm: 'px-4 py-2 text-sm rounded-lg',
+      md: 'px-5 py-2.5 text-sm rounded-lg',
       lg: 'px-6 py-3 text-base rounded-xl',
-      icon: 'p-2 rounded-lg',
+      icon: 'p-2.5 rounded-lg',
     };
 
     return (
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center font-medium transition-all duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+          'inline-flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'active:scale-[0.98]',
+          'active:scale-[0.98] transform',
           variants[variant],
           sizes[size],
           className
@@ -43,7 +43,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4"
+            className="animate-spin h-4 w-4"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

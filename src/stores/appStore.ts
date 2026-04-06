@@ -260,7 +260,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: 'sanple-app-storage',
+      name: 'sample-app-storage',
       partialize: (state) => ({
         articles: state.articles,
         collections: state.collections,

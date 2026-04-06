@@ -145,7 +145,8 @@ body {
 
 /* Focus Ring */
 .focus-ring {
-  @apply outline-none ring-2 ring-primary ring-offset-2;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--primary);
 }
 
 /* Transition Base */
