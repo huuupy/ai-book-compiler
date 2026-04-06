@@ -153,3 +153,53 @@ body {
 .transition-base {
   @apply transition-all duration-200 ease-in-out;
 }
+
+/* KaTeX Styles */
+@import 'katex/dist/katex.min.css';
+
+/* LaTeX Renderer Container */
+.latex-renderer {
+  font-size: 1em;
+  line-height: 1.6;
+  color: inherit;
+}
+
+.latex-renderer p {
+  margin-bottom: 0.75em;
+}
+
+.latex-renderer .katex-block {
+  margin: 1em 0;
+  padding: 0.5em 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.latex-renderer .katex {
+  font-size: 1.1em;
+}
+
+.latex-renderer .katex-block .katex {
+  font-size: 1.3em;
+}
+
+.latex-renderer .katex-error {
+  color: #ef4444;
+  background-color: #fef2f2;
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+}
+
+/* Formula indicator badge */
+.formula-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}

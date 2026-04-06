@@ -1,5 +1,7 @@
 // PDF 导出工具 - 优化版
 
+import katex from 'katex';
+
 interface Article {
   id: string;
   title: string;
@@ -40,16 +42,69 @@ interface ExtendedPrintSettings {
   enableOrphansControl: boolean;
 }
 
+// LaTeX 转 HTML
+function renderLatex(text: string): string {
+  if (!text) return '';
+  
+  let result = text;
+  
+  // 渲染块级公式 $$...$$
+  result = result.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+    try {
+      return `<div class="katex-block">${katex.renderToString(formula.trim(), {
+        displayMode: true,
+        throwOnError: false,
+        output: 'html',
+      })}</div>`;
+    } catch {
+      return `<div class="katex-error">公式错误: ${formula}</div>`;
+    }
+  });
+  
+  // 渲染行内公式 $...$
+  result = result.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+    try {
+      return katex.renderToString(formula.trim(), {
+        displayMode: false,
+        throwOnError: false,
+        output: 'html',
+      });
+    } catch {
+      return `<span class="katex-error">${formula}</span>`;
+    }
+  });
+  
+  return result;
+}
+
 // Markdown 转 HTML
 function markdownToHtml(text: string): string {
   if (!text) return '';
   
-  let html = text
+  // 先处理 LaTeX 公式（保护公式不被 Markdown 处理破坏）
+  const latexMap: Record<string, string> = {};
+  let latexIndex = 0;
+  
+  let processed = text.replace(/\$\$[\s\S]*?\$\$/g, (match) => {
+    const placeholder = `%%LATEX_BLOCK_${latexIndex}%%`;
+    latexMap[placeholder] = renderLatex(match);
+    latexIndex++;
+    return placeholder;
+  });
+  
+  processed = processed.replace(/\$[^\$\n]+?\$/g, (match) => {
+    const placeholder = `%%LATEX_INLINE_${latexIndex}%%`;
+    latexMap[placeholder] = renderLatex(match);
+    latexIndex++;
+    return placeholder;
+  });
+  
+  let html = processed
     // 转义
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    // 代码块
+    // 代码块（放在 LaTeX 保护之后）
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
     // 行内代码
     .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -85,6 +140,11 @@ function markdownToHtml(text: string): string {
   
   if (!html.startsWith('<')) {
     html = '<p>' + html + '</p>';
+  }
+  
+  // 恢复 LaTeX 公式
+  for (const [placeholder, latexHtml] of Object.entries(latexMap)) {
+    html = html.replace(placeholder, latexHtml);
   }
 
   return html;
@@ -429,6 +489,23 @@ export function generateReportHTML(
     
     .two-column .article-content h3 {
       font-size: 11pt;
+    }
+    
+    /* KaTeX 公式样式 */
+    .katex { font-size: 1.1em; }
+    .katex-block { 
+      margin: 1em 0; 
+      padding: 0.5em 0; 
+      text-align: center; 
+      overflow-x: auto;
+    }
+    .katex-block .katex { font-size: 1.3em; }
+    .katex-error { 
+      color: #dc2626; 
+      background: #fef2f2; 
+      padding: 0.2em 0.4em; 
+      border-radius: 0.2em;
+      font-size: 0.9em;
     }
     
     /* 单栏布局优化 */

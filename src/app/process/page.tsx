@@ -9,11 +9,12 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { PrintSettingsPanel, type ExtendedPrintSettings } from '@/components/ui/PrintSettingsPanel';
 import { cn } from '@/lib/utils';
 import { exportToPDF, printPreview } from '@/lib/pdfExport';
+import { renderLatexWithHtml, hasLatex, countLatexFormulas } from '@/lib/latex';
 import {
   FileText, Settings2, Loader2,
   Eye, Download, RotateCcw, Plus, Trash2, ChevronDown, ChevronUp,
   BookOpen, Sparkles, ArrowUp, ArrowDown, Wand2, ClipboardPaste, Image,
-  Upload,
+  Upload, Sigma,
 } from 'lucide-react';
 
 interface ReplyItem {
@@ -77,6 +78,7 @@ export default function ProcessPage() {
   const [expandedReply, setExpandedReply] = useState<string | null>('1');
   const [ocrStatus, setOcrStatus] = useState<string>('');
   const [fileInputRef, setFileInputRef] = useState<HTMLInputElement | null>(null);
+  const [latexPreviewId, setLatexPreviewId] = useState<string | null>(null);
 
   // 添加新回复
   const addReply = useCallback(() => {
@@ -568,6 +570,12 @@ export default function ProcessPage() {
                             {reply.content.length} 字
                           </span>
                         )}
+                        {hasLatex(reply.content) && (
+                          <span className="formula-badge">
+                            <Sigma className="w-3 h-3" />
+                            {countLatexFormulas(reply.content)} 个公式
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {replies.length > 1 && (
@@ -604,6 +612,7 @@ export default function ProcessPage() {
 
 支持以下格式：
 - Markdown 格式（## 标题、**加粗**、列表等）
+- LaTeX 公式（$E=mc^2$ 行内，$$...$$ 块级）
 - 纯文本
 - 代码块"
                           value={reply.content}
@@ -611,6 +620,33 @@ export default function ProcessPage() {
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono"
                           rows={10}
                         />
+                        
+                        {/* LaTeX 公式预览 */}
+                        {hasLatex(reply.content) && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <Button
+                              variant={latexPreviewId === reply.id ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setLatexPreviewId(latexPreviewId === reply.id ? null : reply.id)}
+                            >
+                              <Sigma className="w-4 h-4 mr-1" />
+                              {latexPreviewId === reply.id ? '收起预览' : `预览公式 (${countLatexFormulas(reply.content)})`}
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {latexPreviewId === reply.id && (
+                          <div className="mt-3 p-4 bg-white border border-slate-200 rounded-lg">
+                            <div className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                              <Sigma className="w-3 h-3" />
+                              公式预览
+                            </div>
+                            <div 
+                              className="latex-renderer prose prose-sm max-w-none"
+                              dangerouslySetInnerHTML={{ __html: renderLatexWithHtml(reply.content) }}
+                            />
+                          </div>
+                        )}
                         <Input
                           placeholder="来源（可选，如：ChatGPT、Claude、文心一言）"
                           value={reply.source || ''}
