@@ -1,15 +1,18 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { CheckboxHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Check } from 'lucide-react';
 
-interface CheckboxProps extends CheckboxHTMLAttributes<HTMLInputElement> {
+interface CheckboxProps {
+  className?: string;
   label?: string;
+  checked?: boolean;
+  onChange?: () => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, checked, onChange, ...props }, ref) => {
+  ({ className, label, checked, onChange }, ref) => {
     return (
       <label className="inline-flex items-center gap-3 cursor-pointer select-none">
         <div
@@ -29,7 +32,6 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           checked={checked}
           onChange={onChange}
           className="sr-only"
-          {...props}
         />
         {label && (
           <span className="text-sm font-medium text-slate-700 select-none cursor-pointer">

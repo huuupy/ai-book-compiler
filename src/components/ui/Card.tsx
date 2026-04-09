@@ -1,15 +1,16 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { CardHTMLAttributes, forwardRef, ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
-interface CardProps extends CardHTMLAttributes<HTMLDivElement> {
+interface CardProps {
+  className?: string;
   hover?: boolean;
   children?: ReactNode;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = false, children, ...props }, ref) => {
+  ({ className, hover = false, children }, ref) => {
     return (
       <div
         ref={ref}
@@ -19,7 +20,6 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           hover && 'hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5',
           className
         )}
-        {...props}
       >
         {children}
       </div>
@@ -29,45 +29,70 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = 'Card';
 
-const CardHeader = forwardRef<HTMLDivElement, CardHTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+interface CardHeaderProps {
+  className?: string;
+  children?: ReactNode;
+}
+
+const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ className, children }, ref) => (
     <div
       ref={ref}
       className={cn('px-6 py-4 border-b border-slate-100', className)}
-      {...props}
-    />
+    >
+      {children}
+    </div>
   )
 );
 
 CardHeader.displayName = 'CardHeader';
 
-const CardContent = forwardRef<HTMLDivElement, CardHTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6', className)} {...props} />
+interface CardContentProps {
+  className?: string;
+  children?: ReactNode;
+}
+
+const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
+  ({ className, children }, ref) => (
+    <div ref={ref} className={cn('p-6', className)}>
+      {children}
+    </div>
   )
 );
 
 CardContent.displayName = 'CardContent';
 
-const CardFooter = forwardRef<HTMLDivElement, CardHTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+interface CardFooterProps {
+  className?: string;
+  children?: ReactNode;
+}
+
+const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ className, children }, ref) => (
     <div
       ref={ref}
       className={cn('px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl', className)}
-      {...props}
-    />
+    >
+      {children}
+    </div>
   )
 );
 
 CardFooter.displayName = 'CardFooter';
 
-const CardDescription = forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
+interface CardDescriptionProps {
+  className?: string;
+  children?: ReactNode;
+}
+
+const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+  ({ className, children }, ref) => (
     <p
       ref={ref}
       className={cn('text-sm text-slate-500 mt-1', className)}
-      {...props}
-    />
+    >
+      {children}
+    </p>
   )
 );
 
