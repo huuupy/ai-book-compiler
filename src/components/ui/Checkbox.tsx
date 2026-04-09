@@ -3,12 +3,13 @@
 import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
 import { Check } from 'lucide-react';
+import { ChangeEvent } from 'react';
 
 interface CheckboxProps {
   className?: string;
   label?: string;
   checked?: boolean;
-  onChange?: () => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
