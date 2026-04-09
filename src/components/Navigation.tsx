@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BookOpen, Settings, Menu, X } from 'lucide-react';
+import { BookOpen, Settings, Menu, X, Database } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/', label: '首页', icon: BookOpen },
+  { href: '/knowledge', label: '知识库', icon: Database },
   { href: '/process', label: '整理内容', icon: BookOpen },
   { href: '/settings', label: '设置', icon: Settings },
 ];
