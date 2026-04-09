@@ -4,6 +4,8 @@
 
 A simple and efficient web application that collects AI responses and articles, organizes them into well-structured documents, and exports to beautiful PDF with one click.
 
+🌐 **Live Demo**: https://ai-book-compiler-x1yz.vercel.app/
+
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)

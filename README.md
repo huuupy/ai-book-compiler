@@ -4,6 +4,8 @@
 
 一个简洁高效的 Web 应用，将多个 AI 回复整理为条理清晰的书册，一键导出精美 PDF。
 
+🌐 **在线访问**: https://ai-book-compiler-x1yz.vercel.app/
+
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)
