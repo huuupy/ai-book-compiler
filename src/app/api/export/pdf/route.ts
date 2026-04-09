@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 import type { Article, PrintSettings } from '@/types';
-
+import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 // PDF 样式定义
 const createStyles = (settings: PrintSettings) => StyleSheet.create({
   page: {
