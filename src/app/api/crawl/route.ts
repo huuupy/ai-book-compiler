@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       if (!urls?.length) return NextResponse.json({ success: false, error: '请输入URL' }, { status: 400 });
 
       const results: CrawlResult[] = [];
-      for (const url of urls.filter(u => u?.trim())) {
+      for (const url of urls.filter((u: string) => u?.trim())) {
         const site = detectSite(url);
 
         // 被屏蔽的网站
