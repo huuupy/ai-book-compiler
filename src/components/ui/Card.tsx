@@ -1,14 +1,15 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { CardHTMLAttributes, forwardRef } from 'react';
+import { CardHTMLAttributes, forwardRef, ReactNode } from 'react';
 
 interface CardProps extends CardHTMLAttributes<HTMLDivElement> {
   hover?: boolean;
+  children?: ReactNode;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, hover = false, ...props }, ref) => {
+  ({ className, hover = false, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -19,7 +20,9 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </div>
     );
   }
 );

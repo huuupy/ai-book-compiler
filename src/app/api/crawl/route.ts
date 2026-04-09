@@ -177,9 +177,10 @@ export async function POST(request: NextRequest) {
 
         // 被屏蔽的网站
         if (site.type === 'blocked') {
+          const siteName = 'name' in site ? site.name : '该网站';
           results.push({
-            url, title: `⚠️ ${site.name} 无法抓取`, content: '', status: 'error',
-            summary: `## ${site.name} 无法直接抓取\n\n**原因：** 该平台有反爬机制\n\n### 解决方案\n\n**最可靠的方法：手动复制**\n1. 在浏览器打开链接\n2. 手动复制文章正文\n3. 回到本页面 → 选择「手动输入」模式\n4. 粘贴内容 → 开始处理\n\n**使用阅读工具**\n- Chrome 扩展「简悦 SimpRead」\n- Chrome 扩展「收趣稍后读」`,
+            url, title: `⚠️ ${siteName} 无法抓取`, content: '', status: 'error',
+            summary: `## ${siteName} 无法直接抓取\n\n**原因：** 该平台有反爬机制\n\n### 解决方案\n\n**最可靠的方法：手动复制**\n1. 在浏览器打开链接\n2. 手动复制文章正文\n3. 回到本页面 → 选择「手动输入」模式\n4. 粘贴内容 → 开始处理\n\n**使用阅读工具**\n- Chrome 扩展「简悦 SimpRead」\n- Chrome 扩展「收趣稍后读」`,
           });
           continue;
         }
