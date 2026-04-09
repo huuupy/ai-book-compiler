@@ -8,7 +8,7 @@
 2. 点击右上角 **+** → **New repository**
 3. 填写：
    - **Repository name**: `ai-book-compiler`
-   - **Description**: `将多个 AI 回复整理为条理清晰的书册，一键导出精美 PDF`
+   - **Description**: `将多个 AI 回复整理为条理清晰的书册，一键导出精美 PDF ｜ 知识库 & RAG 平台`
    - 选择 **Public**（开源）
    - 点击 **Create repository**
 
@@ -24,7 +24,7 @@ git init
 git add .
 
 # 提交
-git commit -m "feat: initial release - AI Book Compiler"
+git commit -m "feat: initial release - AI Book Compiler with Knowledge Base"
 
 # 添加远程仓库（替换 YOUR_USERNAME 为你的 GitHub 用户名）
 git remote add origin https://github.com/YOUR_USERNAME/ai-book-compiler.git
@@ -59,6 +59,20 @@ git push -u origin main
 
 ## 发布后推荐操作
 
-- [ ] 添加 Topics：在仓库页面右侧添加 `nextjs`, `react`, `pdf`, `markdown`, `typescript`
+- [ ] 添加 Topics：在仓库页面右侧添加 `nextjs`, `react`, `pdf`, `markdown`, `typescript`, `rag`, `knowledge-base`
 - [ ] 创建 Release：点击 **Create a new release** 添加版本号
 - [ ] 添加徽章：可以在 README 中添加 GitHub stars 徽章
+
+---
+
+## 部署到 Vercel
+
+1. 登录 [Vercel](https://vercel.com)
+2. 点击 **Add New** → **Project**
+3. 导入你的 GitHub 仓库
+4. 点击 **Deploy**
+5. （可选）配置环境变量：
+   - `OPENAI_API_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY`
+   - `QSTASH_TOKEN`

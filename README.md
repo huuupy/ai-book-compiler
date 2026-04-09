@@ -13,6 +13,7 @@
 
 ## 功能特性
 
+### 📚 AI 书册编译
 | 功能 | 描述 |
 |------|------|
 | 📝 **多篇整理** | 支持添加多条 AI 回复，统一整理到一个书册 |
@@ -21,14 +22,14 @@
 | 🖨️ **双栏布局** | 支持单栏/双栏布局 |
 | 📄 **一键导出** | 生成高质量 PDF 文档 |
 
-## 使用流程
-
-```
-1. 输入内容 → 粘贴 AI 回复，填写标题
-2. 整理内容 → 勾选内容，调整顺序
-3. 打印设置 → 选择纸张、布局、边距
-4. 预览导出 → 预览效果，导出 PDF
-```
+### 🧠 知识库 & RAG 平台
+| 功能 | 描述 |
+|------|------|
+| 📂 **多格式支持** | 支持 PDF、Word、PPT、TXT、Markdown、ZIP |
+| 📊 **智能解析** | 自动提取文本内容 |
+| ❓ **Q&A 生成** | 自动从文档生成问答对 |
+| 🔍 **向量搜索** | 支持基于语义的知识检索（需配置 Supabase） |
+| 🤖 **AI 生成** | 使用 GPT 生成高质量 Q&A（需配置 OpenAI） |
 
 ## 快速开始
 
@@ -53,25 +54,83 @@ npm run build
 npm start
 ```
 
+## 高级配置
+
+### OpenAI API（推荐，用于智能 Q&A 生成）
+
+1. 获取 API Key: [OpenAI Platform](https://platform.openai.com/api-keys)
+2. 在 `.env.local` 中添加：
+```
+OPENAI_API_KEY=sk-your-api-key
+```
+
+### Supabase 向量数据库（可选，用于知识库持久化）
+
+1. 创建项目: [Supabase](https://supabase.com)
+2. 运行 `supabase-setup.sql` 创建表
+3. 在 `.env.local` 中添加：
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-key
+```
+
+### Upstash QStash（可选，用于后台任务处理）
+
+1. 创建项目: [Upstash QStash](https://console.upstash.com/qstash)
+2. 在 `.env.local` 中添加：
+```
+QSTASH_TOKEN=your-token
+QSTASH_CURRENT_SIGNING_KEY=your-key
+QSTASH_VERIFIER_SIGNING_KEY=your-key
+```
+
+## 使用流程
+
+### AI 书册编译
+```
+1. 输入内容 → 粘贴 AI 回复，填写标题
+2. 整理内容 → 勾选内容，调整顺序
+3. 打印设置 → 选择纸张、布局、边距
+4. 预览导出 → 预览效果，导出 PDF
+```
+
+### 知识库构建
+```
+1. 填写知识库名称
+2. 上传文档（支持拖拽）
+3. 点击「开始解析」
+4. 查看生成的 Q&A
+```
+
 ## 技术栈
 
 - **框架**: Next.js 14
 - **语言**: TypeScript
 - **样式**: Tailwind CSS
 - **图标**: Lucide React
+- **文件存储**: Vercel Blob
+- **向量数据库**: Supabase (可选)
+- **AI**: OpenAI GPT (可选)
+- **任务队列**: Upstash QStash (可选)
 
 ## 项目结构
 
 ```
 src/
 ├── app/
-│   ├── page.tsx          # 首页
-│   ├── process/          # 整理页面
-│   └── settings/         # 设置页面
+│   ├── page.tsx           # 首页
+│   ├── process/           # 整理页面
+│   ├── settings/          # 设置页面
+│   ├── knowledge/         # 知识库页面
+│   └── api/
+│       ├── crawl/         # 网页爬取
+│       └── knowledge/    # 知识库 API
 ├── components/
-│   └── ui/               # UI 组件
+│   └── ui/                # UI 组件
 └── lib/
-    └── pdfExport.ts      # PDF 导出
+    ├── fileParser.ts      # 文件解析
+    ├── openai.ts          # OpenAI 集成
+    └── vectorStore.ts     # 向量存储
 ```
 
 ## License
