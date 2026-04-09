@@ -1,4 +1,5 @@
 // PDF 导出工具 - 优化版
+'use client';
 
 import katex from 'katex';
 
