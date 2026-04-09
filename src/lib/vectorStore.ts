@@ -1,13 +1,25 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase 配置（需要用户在环境变量中设置）
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // 向量维度（text-embedding-3-small 使用 1536 维）
 export const EMBEDDING_DIMENSION = 1536;
+
+// 延迟创建 Supabase 客户端
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient | null {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+  
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    );
+  }
+  
+  return supabaseInstance;
+}
 
 // 知识库表类型
 export interface KnowledgeBase {
@@ -40,6 +52,9 @@ export interface QAPair {
 
 // 创建知识库
 export async function createKnowledgeBase(name: string, description?: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error('Supabase not configured');
+  
   const { data, error } = await supabase
     .from('knowledge_bases')
     .insert({ name, description })
@@ -57,6 +72,9 @@ export async function saveDocumentChunk(
   content: string,
   chunkIndex: number
 ) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error('Supabase not configured');
+  
   const { data, error } = await supabase
     .from('document_chunks')
     .insert({
@@ -79,6 +97,9 @@ export async function saveQAPair(
   question: string,
   answer: string
 ) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error('Supabase not configured');
+  
   const { data, error } = await supabase
     .from('qa_pairs')
     .insert({
@@ -100,8 +121,9 @@ export async function searchSimilarContent(
   queryEmbedding: number[],
   matchCount: number = 5
 ) {
-  // 注意：需要 Supabase 启用 pgvector 扩展
-  // SQL: CREATE EXTENSION IF NOT EXISTS vector;
+  const supabase = getSupabaseClient();
+  if (!supabase) return [];
+  
   const { data, error } = await supabase
     .rpc('match_document_chunks', {
       knowledge_base_id_param: knowledgeBaseId,
@@ -119,6 +141,9 @@ export async function searchSimilarContent(
 
 // 获取知识库中的 Q&A 对
 export async function getQAPairs(knowledgeBaseId: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return [];
+  
   const { data, error } = await supabase
     .from('qa_pairs')
     .select('*')
@@ -131,6 +156,9 @@ export async function getQAPairs(knowledgeBaseId: string) {
 
 // 获取所有知识库
 export async function getAllKnowledgeBases() {
+  const supabase = getSupabaseClient();
+  if (!supabase) return [];
+  
   const { data, error } = await supabase
     .from('knowledge_bases')
     .select('*')
@@ -142,5 +170,5 @@ export async function getAllKnowledgeBases() {
 
 // 检查 Supabase 是否配置
 export function isSupabaseConfigured() {
-  return Boolean(supabaseUrl && supabaseKey);
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
 }

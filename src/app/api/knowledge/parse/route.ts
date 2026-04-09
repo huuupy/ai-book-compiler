@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
     const messages = await qstash.messages.get(jobId);
     return NextResponse.json({
       messageId: messages.messageId,
-      state: messages.state,
+      // @ts-ignore - QStash Message type may vary
+      state: (messages as Record<string, unknown>).state || 'unknown',
     });
   } catch (error) {
     return NextResponse.json({ status: 'unknown' });

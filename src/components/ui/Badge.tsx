@@ -5,7 +5,37 @@ import { statusColors, statusIcons } from '@/lib/utils';
 import type { ArticleStatus } from '@/types';
 import { Clock, Loader2, CheckCircle2, XCircle, Play } from 'lucide-react';
 
+// 通用 Badge 组件
 interface BadgeProps {
+  variant?: 'default' | 'secondary' | 'success' | 'warning' | 'danger' | 'outline';
+  className?: string;
+  children: React.ReactNode;
+}
+
+const variantClasses = {
+  default: 'bg-slate-100 text-slate-700',
+  secondary: 'bg-purple-100 text-purple-700',
+  success: 'bg-green-100 text-green-700',
+  warning: 'bg-yellow-100 text-yellow-700',
+  danger: 'bg-red-100 text-red-700',
+  outline: 'border border-slate-300 text-slate-600 bg-white',
+};
+
+export function Badge({ variant = 'default', className, children }: BadgeProps) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium',
+        variantClasses[variant],
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+interface StatusBadgeProps {
   status: ArticleStatus;
   className?: string;
 }
@@ -24,7 +54,7 @@ const labelMap = {
   failed: '失败',
 };
 
-export function StatusBadge({ status, className }: BadgeProps) {
+export function StatusBadge({ status, className }: StatusBadgeProps) {
   const Icon = iconMap[status];
   
   return (
